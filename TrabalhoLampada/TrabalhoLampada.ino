@@ -34,23 +34,17 @@ void loop() {
     // Quando o valor recibido for 0 tem que desligar o LED, caso contrario liga
     if (novoStatusLed == 0)
     {
-     // pinMode(OUTPUTLEDPIN, OUTPUT);                      // Definindo o pin como saida
-      //digitalWrite(OUTPUTLEDPIN, LOW);
       ledcWrite(pwmChannel, novoStatusLed);                // Utilizando PWM para controlar o OFF
       Serial.print("Desliguei o LED\n");
     }
     else if (novoStatusLed == 100)
     {
-      //pinMode(OUTPUTLEDPIN, OUTPUT);                      // Definindo o pin como saida
-      //digitalWrite(OUTPUTLEDPIN, HIGH);
       ledcWrite(pwmChannel, novoStatusLed);                // Utilizando PWM para controlar o ON
       Serial.print("Liguei o LED\n");
     }
   }
   else if (statusOption == 1)                   // Se o valor é 1, iremos controlar o brilho do LED com PWM
   {
-//    ledcSetup(PWM_Channel, PWM_Frequency, PWM_Resolution);        // pode ser apagado
-//    ledcAttachPin (OUTPUTLEDPIN, PWM_Channel);
     ledcWrite(pwmChannel, statusBrightness);
     Serial.print("Valor do PWM: ");
     Serial.print(statusBrightness);
