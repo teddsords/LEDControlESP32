@@ -13,15 +13,27 @@ int pwmFrequency = 1000;                             // Definindo a frequencia d
 int pwmChannel = 0;                                  // Definindo o canal que sera utilizado para o PWM
 int pwmResolution = 8;                               // Resolucao do PWM
 int dutyCycle = 127;                                  // Define a largura do ciclo
+int leituraLDR = 0;
 
 #define OUTPUTLEDPIN 23
+#define LDRPIN       32
+#define ACENDELUZLDR 2500                            // Valor maximo do LDR é 4095
+#define DESLIGA      0
+#define LIGA         100
 void setup() {
-  Serial.begin(115200);
+    Serial.begin(9600);
+  Serial.println(analogRead(15));
+  Serial.println("FIRST");
+  
   ledcSetup(pwmChannel, pwmFrequency, pwmResolution);        // Configurando o PINO 23 como PWM
   ledcAttachPin (OUTPUTLEDPIN, pwmChannel);                    // Colocando o canal 0 de  PWM no pino 23
+  //pinMode(LDRPIN, INPUT);
   circusESP32.begin();                                          // Circus object fazendo a sua conexao
 
-}
+//  Serial.begin(9600);
+//  Serial.println(analogRead(15));
+//  Serial.println("FIRST");
+  }
 void loop() {
   //delay (1000);
   double novoStatusLed = circusESP32.read(orderKeyLed, token);
@@ -30,7 +42,7 @@ void loop() {
 
   if (statusOption == 0)                            // Se o valor é 0, iremos ligar ou desligar o LED
   {
-    
+
     // Quando o valor recibido for 0 tem que desligar o LED, caso contrario liga
     if (novoStatusLed == 0)
     {
@@ -43,11 +55,31 @@ void loop() {
       Serial.print("Liguei o LED\n");
     }
   }
+  
   else if (statusOption == 1)                   // Se o valor é 1, iremos controlar o brilho do LED com PWM
   {
     ledcWrite(pwmChannel, statusBrightness);
     Serial.print("Valor do PWM: ");
-    Serial.print(statusBrightness);
-    Serial.print("\n\n");
+    Serial.println(statusBrightness);
+  }
+  
+  else if (statusOption == 2)
+  {
+      Serial.println(analogRead(15));
+      Serial.println("Oi");
+    if (analogRead(LDRPIN) < ACENDELUZLDR)
+    {
+      ledcWrite(pwmChannel, DESLIGA);
+      Serial.print("Valor LDR NO IF: ");
+      Serial.println(analogRead(LDRPIN));
+      delay(1000);
+    }
+    else
+    {
+      ledcWrite(pwmChannel, LIGA);
+      Serial.print("Valor LDR NO ELSEIF: ");
+      Serial.println(analogRead(LDRPIN));
+      delay(1000);
+    }
   }
 }
