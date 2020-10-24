@@ -1,3 +1,10 @@
+/*
+* Arquivo: trabalhoLampada.c
+* Autores: Leonardo Luis Grando e Teddy Ordoñez Nunñez
+* Função do arquivo: Controle geral dem LED inteligente utilizando web server para controlar ON/OFF, Dimmer. Podendo usar sensor LDR e PIR. Com implementação de um RTC.
+* Criado em 21 de outubro de 2020
+* Modificado em 23 de outubro de 2020
+*/
 #include <CircusESP32Lib.h>
 
 char ssid[] = "2G_H504";                              // Nome da minha rede
