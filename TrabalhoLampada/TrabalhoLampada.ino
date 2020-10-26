@@ -21,6 +21,9 @@ int pwmChannel = 0;                                  // Definindo o canal que se
 int pwmResolution = 8;                               // Resolucao do PWM
 int dutyCycle = 127;                                 // Define a largura do ciclo
 bool ledOnOff = false;                               // Variavel para conhecer o status do LED
+short novoStatusLed;                                 // Variavel para saber se vamos lugar ou desligar o LED dependendo do valor lido do sinal de circus of things (COT)
+short statusOption;                                  // Variavel para saber qual opcao de controle foi escolhida no site de COT      
+short statusBrightness;                              // Variavel para saber qual o nivel de brilho escolhido do sinal de COT
 
 char ssid[] = "2G_H504";                              // Nome da minha rede
 char password[] = "94500519";                         // Senha da rede
@@ -40,17 +43,19 @@ void setup() {
 }
 
 void loop() {
-  double novoStatusLed = circusESP32.read(orderKeyLed, token);
-  double statusOption = circusESP32.read(orderKeyOption, token);
-  int statusBrightness = circusESP32.read(orderKeyBrightness, token);
+  novoStatusLed = circusESP32.read(orderKeyLed, token);                   // Realizando a leitura do sinal do SWITCH no site de COT
+  statusOption = circusESP32.read(orderKeyOption, token);                 // Realizando a leitura do sinal de OPCAO no site de COT
+  statusBrightness = circusESP32.read(orderKeyBrightness, token);         // Realizando a leitura do sinal de DIMMER no site de COT
+
+  Serial.println("Passei no inicio");
 
   // Sera que teriamos que fazer uma verificacao de se tem o LEDD ligado ou nao?
   // O problea de fazer isto eh que o canal do LED esta em pwm, entao acho que tentarei usar uma variavel para saber o status dela.
   // Olha a linha 54 para a solucao pensada.
-  
-  if(digitalRead(PIRSENSOR == 1))                           // Se detectar movimento
+
+  if (digitalRead(PIRSENSOR == 1))                          // Se detectar movimento
   {
-    if(ACENDELUZLDR < analogRead(LDRPIN))                   // E luminosidade baixa
+    if (ACENDELUZLDR < analogRead(LDRPIN))                  // E luminosidade baixa
     {
       // if (ledOnOff == false) Ligamos o LED, caso contrario faz nada!!!!
       ledcWrite(pwmChannel, LIGA);                          // Ligamos o LED
@@ -59,14 +64,14 @@ void loop() {
 
   if (statusOption == 0)                                    // Se o valor é 0, iremos ligar ou desligar o LED
   {
-    if (novoStatusLed == 0)                                // Quando o valor recibido for 0 tem que desligar o LED, caso contrario liga
+    if (novoStatusLed == DESLIGA)                           // Quando o valor recibido for 0 tem que desligar o LED, caso contrario liga
     {
       ledcWrite(pwmChannel, novoStatusLed);                // Utilizando PWM para controlar o OFF
       ledOnOff = false;                                    // Nao verifiquei o seu funcionamento ainda
       Serial.println("Desliguei o LED");
-      Serial.println(ledOnOff);                            // Tambem nao verifiquei seu funcionamento 
+      Serial.println(ledOnOff);                            // Tambem nao verifiquei seu funcionamento
     }
-    else if (novoStatusLed == 100)
+    else if (novoStatusLed == LIGA)
     {
       ledcWrite(pwmChannel, novoStatusLed);                // Utilizando PWM para controlar o ON
       ledOnOff = true;                                     // Nao verifiquei seu funcionamento ainda
@@ -81,31 +86,31 @@ void loop() {
     if (statusBrightness > 0)                             // nao verifiquei o funcionamento ainda
     {
       ledOnOff = true;
-    }   
+    }
     else if (statusBrightness == 0)                       // Tambem nao verifiuei o seu funcionamento ainda
-     {
+    {
       ledOnOff = false;
-     }
+    }
     Serial.print("Valor do PWM: ");                        // Escrevendo no monitor serial o valor recebido para PWM do servidor
     Serial.println(statusBrightness);
   }
-  
-//
-//  else if (statusOption == 2)                             // Se o valor é 1, iremos controlar o LED
-//  {
-//    if (ACENDELUZLDR > analogRead(LDRPIN))               // Caso o valor da leitura seja menor que o valor pre definido para a luminosidade, iremos desligar o LED
-//    {
-//      ledcWrite(pwmChannel, DESLIGA);                    // Utilizando PWM para desligar o LED, ja que o pino foi configurado como uma saida PWM
-//      Serial.print("Valor LDR NO IF: ");                // Escrevendo o valor lido do sensor LDR no monitor serial
-//      Serial.println(analogRead(LDRPIN));               // Lendo o valor entregue pelo sensor LDR
-//      //delay(1000);
-//    }
-//    else                                                // Caso a luminosidade seja baixa, ou seja o valor entregue pelo sensor seja alto, iremos ligar o LED
-//    {
-//      ledcWrite(pwmChannel, LIGA);                      // Utilizando PWM para ligar o LED pois o pino esta configurado para trabalhar como PWM
-//      Serial.print("Valor LDR NO ELSEIF: ");            // Escrevendo o valor lido do sensor LDR no monitor serial
-//      Serial.println(analogRead(LDRPIN));               // Lendo o valor entregue pelo sensor LDR
-//      //delay(1000);
-//    }
-//  }
+
+  //
+  //  else if (statusOption == 2)                             // Se o valor é 1, iremos controlar o LED
+  //  {
+  //    if (ACENDELUZLDR > analogRead(LDRPIN))               // Caso o valor da leitura seja menor que o valor pre definido para a luminosidade, iremos desligar o LED
+  //    {
+  //      ledcWrite(pwmChannel, DESLIGA);                    // Utilizando PWM para desligar o LED, ja que o pino foi configurado como uma saida PWM
+  //      Serial.print("Valor LDR NO IF: ");                // Escrevendo o valor lido do sensor LDR no monitor serial
+  //      Serial.println(analogRead(LDRPIN));               // Lendo o valor entregue pelo sensor LDR
+  //      //delay(1000);
+  //    }
+  //    else                                                // Caso a luminosidade seja baixa, ou seja o valor entregue pelo sensor seja alto, iremos ligar o LED
+  //    {
+  //      ledcWrite(pwmChannel, LIGA);                      // Utilizando PWM para ligar o LED pois o pino esta configurado para trabalhar como PWM
+  //      Serial.print("Valor LDR NO ELSEIF: ");            // Escrevendo o valor lido do sensor LDR no monitor serial
+  //      Serial.println(analogRead(LDRPIN));               // Lendo o valor entregue pelo sensor LDR
+  //      //delay(1000);
+  //    }
+  //  }
 }
