@@ -4,10 +4,9 @@
     Função do arquivo: Controle geral dem LED inteligente utilizando web server para controlar ON/OFF, Dimmer.
     Podendo usar sensor LDR e PIR. Com implementação de um RTC.
     Criado em 21 de outubro de 2020
-    Modificado em 01 de novembro de 2020
+    Modificado em 02 de novembro de 2020
 */
 
-// PARA FAZER USO DO NTP, SERVIDOR DE TEMPO E DIA -----> https://randomnerdtutorials.com/esp32-date-time-ntp-client-server-arduino/#:~:text=Getting%20Date%20and%20Time%20from,results%20on%20the%20Serial%20Monitor.
 #include <CircusESP32Lib.h>
 #define OUTPUTLEDPIN 23                              // Definindo o valor do pino de saida para o LED
 #define LDRPIN       32                              // Definindo o pino de entrada para o sensor LDR
@@ -20,7 +19,6 @@ int pwmFrequency = 5000;                             // Definindo a frequencia d
 int pwmChannel = 0;                                  // Definindo o canal que sera utilizado para o PWM
 int pwmResolution = 8;                               // Resolucao do PWM
 int dutyCycle = 127;                                 // Define a largura do ciclo
-bool ledOnOff = false;                               // Variavel para conhecer o status do LED
 short novoStatusLed;                                 // Variavel para saber se vamos lugar ou desligar o LED dependendo do valor lido do sinal de circus of things (COT)
 short statusOption;                                  // Variavel para saber qual opcao de controle foi escolhida no site de COT      
 short statusBrightness;                              // Variavel para saber qual o nivel de brilho escolhido do sinal de COT
@@ -53,40 +51,25 @@ void loop() {
 
   Serial.println("Passei no inicio");
 
-  // Sera que teriamos que fazer uma verificacao de se tem o LEDD ligado ou nao?
-  // O problea de fazer isto eh que o canal do LED esta em pwm, entao acho que tentarei usar uma variavel para saber o status dela.
-  // Olha a linha 54 para a solucao pensada.
-
 
   if (statusOption == 0)                                    // Se o valor é 0, iremos ligar ou desligar o LED
   {
     if (novoStatusLed == DESLIGA)                           // Quando o valor recibido for 0 tem que desligar o LED, caso contrario liga
     {
       ledcWrite(pwmChannel, novoStatusLed);                // Utilizando PWM para controlar o OFF
-      ledOnOff = false;                                    
       Serial.println("Desliguei o LED");
-      Serial.println(ledOnOff);                           
     }
     else if (novoStatusLed == LIGA)
     {
       ledcWrite(pwmChannel, novoStatusLed);                // Utilizando PWM para controlar o ON
-      ledOnOff = true;                                     
       Serial.println("Liguei o LED");
-      Serial.println(ledOnOff);                            
     }
   }
 
   else if (statusOption == 1)                              // Se o valor é 1, iremos controlar o brilho do LED com PWM
   {
     ledcWrite(pwmChannel, statusBrightness);              // altera a luminosidade do led de acordo a leitura da seção do localhost
-    if (statusBrightness > 0)                             // se a leitura do PWM for maior que 0, o status do led é posto como true 
-    {
-      ledOnOff = true;
-    }
-    else if (statusBrightness == 0)                       //se a leitura do pwm for igual a 0, quer dizer que o led esta desligado, e seu status muda p false
-    {
-      ledOnOff = false;
-    }
+   
     Serial.print("Valor do PWM: ");                        // Escrevendo no monitor serial o valor recebido para PWM do servidor
     Serial.println(statusBrightness);
   }
@@ -104,7 +87,7 @@ void loop() {
       else                                                // Caso a luminosidade seja baixa, ou seja o valor entregue pelo sensor seja alto, iremos ligar o LED
       {
         ledcWrite(pwmChannel, LIGA);                      // Utilizando PWM para ligar o LED pois o pino esta configurado para trabalhar como PWM
-        Serial.print("Valor LDR NO ELSEIF: ");            // Escrevendo o valor lido do sensor LDR no monitor serial
+        Serial.print("Valor LDR NO ELSE: ");            // Escrevendo o valor lido do sensor LDR no monitor serial
         Serial.println(analogRead(LDRPIN));               // Lendo o valor entregue pelo sensor LDR
         //delay(1000);
       }
@@ -132,8 +115,4 @@ void loop() {
       ledcWrite(pwmChannel, DESLIGA);                          // desligamos o LED
     }
   }
-  
-  // if (ledOnOff == false) Ligamos o LED, caso contrario faz nada!!!!
-  
-
 }
